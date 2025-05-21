@@ -5,34 +5,37 @@ import { useMemo } from "react";
 import { routeTree } from "./routeTree.gen";
 import { useAuth } from "./hooks/useAuth";
 import NotFound from "./components/NotFound";
+import { Provider } from "react-redux";
+import { store } from "./store/store";
 
 declare module "@tanstack/react-router" {
-  interface Register {
-    routes: typeof routeTree;
-  }
+    interface Register {
+        routes: typeof routeTree;
+    }
 }
 
 function App() {
-  const auth = useAuth();
-  const queryClient = new QueryClient();
+    const auth = useAuth();
+    const queryClient = new QueryClient();
 
-  // Create the router with correct context and memoize it
-  const router = useMemo(() => {
-    return createRouter({
-      routeTree,
-      context: { authentication: auth },
-      defaultNotFoundComponent: NotFound,
-    });
-  }, [auth]);
+    // Create the router with correct context and memoize it
+    const router = useMemo(() => {
+        return createRouter({
+            routeTree,
+            context: { authentication: auth },
+            defaultNotFoundComponent: NotFound,
+        });
+    }, [auth]);
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      {/* <h1 className="mb-10 text-2xl font-extrabold">Tanstack Router</h1> */}
-      <div className="">
-        <RouterProvider router={router} />
-      </div>
-    </QueryClientProvider>
-  );
+    return (
+        <Provider store={store}>
+            <QueryClientProvider client={queryClient}>
+                <div className="">
+                    <RouterProvider router={router} />
+                </div>
+            </QueryClientProvider>
+        </Provider>
+    );
 }
 
 export default App;
