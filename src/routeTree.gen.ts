@@ -11,7 +11,6 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as QueryExampleImport } from './routes/query-example'
 import { Route as LoginImport } from './routes/login'
 import { Route as FleetImport } from './routes/fleet'
 import { Route as AnalyticsImport } from './routes/analytics'
@@ -23,12 +22,6 @@ import { Route as MonitorRobotRequestImport } from './routes/monitor/robotReques
 import { Route as ConfigureUserImport } from './routes/configure/user'
 
 // Create/Update Routes
-
-const QueryExampleRoute = QueryExampleImport.update({
-  id: '/query-example',
-  path: '/query-example',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const LoginRoute = LoginImport.update({
   id: '/login',
@@ -123,13 +116,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
-    '/query-example': {
-      id: '/query-example'
-      path: '/query-example'
-      fullPath: '/query-example'
-      preLoaderRoute: typeof QueryExampleImport
-      parentRoute: typeof rootRoute
-    }
     '/configure/user': {
       id: '/configure/user'
       path: '/user'
@@ -183,7 +169,6 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/fleet': typeof FleetRoute
   '/login': typeof LoginRoute
-  '/query-example': typeof QueryExampleRoute
   '/configure/user': typeof ConfigureUserRoute
   '/monitor/robotRequest': typeof MonitorRobotRequestRoute
   '/configure/': typeof ConfigureIndexRoute
@@ -195,7 +180,6 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/fleet': typeof FleetRoute
   '/login': typeof LoginRoute
-  '/query-example': typeof QueryExampleRoute
   '/configure/user': typeof ConfigureUserRoute
   '/monitor/robotRequest': typeof MonitorRobotRequestRoute
   '/configure': typeof ConfigureIndexRoute
@@ -209,7 +193,6 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/fleet': typeof FleetRoute
   '/login': typeof LoginRoute
-  '/query-example': typeof QueryExampleRoute
   '/configure/user': typeof ConfigureUserRoute
   '/monitor/robotRequest': typeof MonitorRobotRequestRoute
   '/configure/': typeof ConfigureIndexRoute
@@ -224,7 +207,6 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/fleet'
     | '/login'
-    | '/query-example'
     | '/configure/user'
     | '/monitor/robotRequest'
     | '/configure/'
@@ -235,7 +217,6 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/fleet'
     | '/login'
-    | '/query-example'
     | '/configure/user'
     | '/monitor/robotRequest'
     | '/configure'
@@ -247,7 +228,6 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/fleet'
     | '/login'
-    | '/query-example'
     | '/configure/user'
     | '/monitor/robotRequest'
     | '/configure/'
@@ -261,7 +241,6 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   FleetRoute: typeof FleetRoute
   LoginRoute: typeof LoginRoute
-  QueryExampleRoute: typeof QueryExampleRoute
   MonitorRobotRequestRoute: typeof MonitorRobotRequestRoute
   MonitorIndexRoute: typeof MonitorIndexRoute
 }
@@ -272,7 +251,6 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   FleetRoute: FleetRoute,
   LoginRoute: LoginRoute,
-  QueryExampleRoute: QueryExampleRoute,
   MonitorRobotRequestRoute: MonitorRobotRequestRoute,
   MonitorIndexRoute: MonitorIndexRoute,
 }
@@ -292,7 +270,6 @@ export const routeTree = rootRoute
         "/analytics",
         "/fleet",
         "/login",
-        "/query-example",
         "/monitor/robotRequest",
         "/monitor/"
       ]
@@ -315,9 +292,6 @@ export const routeTree = rootRoute
     },
     "/login": {
       "filePath": "login.tsx"
-    },
-    "/query-example": {
-      "filePath": "query-example.tsx"
     },
     "/configure/user": {
       "filePath": "configure/user.tsx",
