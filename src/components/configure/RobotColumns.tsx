@@ -3,7 +3,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
-import type { Robot } from "@/hooks/useRobots";
+import type { Robot } from "@/services/robots";
 
 // Status badge component
 const StatusBadge = ({ status }: { status: Robot["status"] }) => {
@@ -86,8 +86,8 @@ const TypeBadge = ({ type }: { type: Robot["type"] }) => {
 };
 
 // Charge indicator component
-const ChargeIndicator = ({ charge }: { charge: string }) => {
-    const chargeValue = Number.parseInt(charge.replace("%", ""), 10);
+const ChargeIndicator = ({ charge }: { charge: number }) => {
+    const chargeValue = charge; // charge is already a number from API transformation
 
     const getChargeColor = (value: number) => {
         if (value >= 70) return "bg-green-500";
@@ -103,7 +103,7 @@ const ChargeIndicator = ({ charge }: { charge: string }) => {
                     style={{ width: `${chargeValue}%` }}
                 />
             </div>
-            <span className="text-sm font-medium">{charge}</span>
+            <span className="text-sm font-medium">{charge}%</span>
         </div>
     );
 };
