@@ -181,10 +181,10 @@ const RobotScreen = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-gray-600">
-                                Connected
+                                Inactive
                             </p>
                             <p className="text-2xl font-bold text-blue-600">
-                                {isStatsLoading ? "..." : stats.connected}
+                                {isStatsLoading ? "..." : stats.inactive}
                             </p>
                         </div>
                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -195,9 +195,6 @@ const RobotScreen = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Direct Navigation Test */}
-            {/* <DirectNavigationTest /> */}
 
             {/* Data Table */}
             <div className="bg-white rounded-lg shadow-sm flex-1 flex flex-col overflow-hidden">

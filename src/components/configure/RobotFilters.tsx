@@ -165,6 +165,7 @@ export const RobotFilters = () => {
                             <SelectItem value="ACTIVE">Active</SelectItem>
                             <SelectItem value="CHARGING">Charging</SelectItem>
                             <SelectItem value="INACTIVE">Inactive</SelectItem>
+                            <SelectItem value="ERROR">Error</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

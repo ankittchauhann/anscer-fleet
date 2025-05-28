@@ -7,7 +7,7 @@ export interface Robot {
     type: "TUGGER" | "CONVEYOR" | "FORKLIFT";
     location: string;
     charge: number; // Changed from string to number (percentage)
-    status: "ACTIVE" | "CHARGING" | "INACTIVE";
+    status: "ACTIVE" | "CHARGING" | "INACTIVE" | "ERROR";
     connectivity: "CONNECTED" | "DISCONNECTED";
     lastSeen?: string; // ISO date string
     batteryHealth?: number; // 0-100 percentage
@@ -21,7 +21,7 @@ interface BackendRobot {
     type: "TUGGER" | "CONVEYOR" | "FORKLIFT";
     location: string;
     charge: number; // Backend now returns this as number (percentage)
-    status: "ACTIVE" | "CHARGING" | "INACTIVE";
+    status: "ACTIVE" | "CHARGING" | "INACTIVE" | "ERROR";
     connectivity: "CONNECTED" | "DISCONNECTED";
     lastSeen?: string;
     batteryHealth?: number;
@@ -54,6 +54,7 @@ export interface RobotStats {
     active: number;
     charging: number;
     inactive: number;
+    error: number;
     connected: number;
     disconnected: number;
     averageCharge: number;
@@ -126,6 +127,7 @@ export const robotsApi = {
             active: robots.filter((r) => r.status === "ACTIVE").length,
             charging: robots.filter((r) => r.status === "CHARGING").length,
             inactive: robots.filter((r) => r.status === "INACTIVE").length,
+            error: robots.filter((r) => r.status === "ERROR").length,
             connected: robots.filter((r) => r.connectivity === "CONNECTED")
                 .length,
             disconnected: robots.filter(
@@ -179,8 +181,8 @@ export const robotsApi = {
 
     // Get robot statistics only
     getRobotStats: async (): Promise<RobotStats> => {
-        // Get all robots to calculate stats (without pagination for accurate totals)
-        const response = await apiRequest<BackendRobotsResponse>("/robots");
+        // Get all robots to calculate stats (using unlimited endpoint for accurate totals)
+        const response = await apiRequest<BackendRobotsResponse>("/robots/all");
         const robots = response.data.map(transformRobot);
 
         return {
@@ -188,6 +190,7 @@ export const robotsApi = {
             active: robots.filter((r) => r.status === "ACTIVE").length,
             charging: robots.filter((r) => r.status === "CHARGING").length,
             inactive: robots.filter((r) => r.status === "INACTIVE").length,
+            error: robots.filter((r) => r.status === "ERROR").length,
             connected: robots.filter((r) => r.connectivity === "CONNECTED")
                 .length,
             disconnected: robots.filter(

@@ -1,5 +1,3 @@
-"use client";
-
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
@@ -14,6 +12,8 @@ const StatusBadge = ({ status }: { status: Robot["status"] }) => {
             case "CHARGING":
                 return "bg-yellow-100 text-yellow-800 border-yellow-200";
             case "INACTIVE":
+                return "bg-gray-100 text-gray-800 border-gray-200";
+            case "ERROR":
                 return "bg-red-100 text-red-800 border-red-200";
             default:
                 return "bg-gray-100 text-gray-800 border-gray-200";
@@ -108,7 +108,8 @@ const ChargeIndicator = ({ charge }: { charge: number }) => {
     );
 };
 
-export const columns: ColumnDef<Robot>[] = [
+// Export function to get columns (Fast Refresh compatible)
+export const getRobotColumns = (): ColumnDef<Robot>[] => [
     {
         accessorKey: "serialNumber",
         header: ({ column }) => {
@@ -226,3 +227,6 @@ export const columns: ColumnDef<Robot>[] = [
         ),
     },
 ];
+
+// Legacy export for backward compatibility
+export const columns = getRobotColumns();

@@ -5,7 +5,7 @@ import Robot from "@/components/configure/Robot";
 export interface ConfigureSearchParams {
     // Search and filtering
     search?: string;
-    status?: "ACTIVE" | "CHARGING" | "INACTIVE";
+    status?: "ACTIVE" | "CHARGING" | "INACTIVE" | "ERROR";
     type?: "TUGGER" | "CONVEYOR" | "FORKLIFT";
     connectivity?: "CONNECTED" | "DISCONNECTED";
     location?: string;
@@ -33,7 +33,9 @@ export const Route = createFileRoute("/configure/")({
                 typeof search.search === "string" ? search.search : undefined,
             status:
                 typeof search.status === "string" &&
-                ["ACTIVE", "CHARGING", "INACTIVE"].includes(search.status)
+                ["ACTIVE", "CHARGING", "INACTIVE", "ERROR"].includes(
+                    search.status
+                )
                     ? (search.status as ConfigureSearchParams["status"])
                     : undefined,
             type:
