@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import Robot from "@/components/configure/Robot";
+import Robot from "@/components/configure/robot/Robot";
 
 export interface ConfigureSearchParams {
     // Search and filtering
