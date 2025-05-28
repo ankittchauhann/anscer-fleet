@@ -4,8 +4,8 @@ import { useRobots, useRobotStats } from "@/hooks/useRobots";
 import type { RobotQueryParams } from "@/services/robots";
 import { defaultRobotQueryParams } from "@/utils/queryBuilder";
 import type { ConfigureSearchParams } from "@/routes/configure";
-import { DataTable } from "./DataTable";
-import { columns } from "./RobotColumns";
+import { RobotDataTable } from "./RobotDataTable";
+import { getRobotColumns } from "./RobotColumns";
 
 const RobotScreen = () => {
     const searchParams = useSearch({
@@ -199,12 +199,12 @@ const RobotScreen = () => {
             {/* Data Table */}
             <div className="bg-white rounded-lg shadow-sm flex-1 flex flex-col overflow-hidden">
                 <div className="flex-1 overflow-hidden">
-                    <DataTable
-                        columns={columns}
+                    <RobotDataTable
+                        columns={getRobotColumns()}
                         data={robots}
                         isLoading={isLoading}
                         pagination={pagination}
-                        onParamsChange={(newParams) => {
+                        onParamsChange={(newParams: RobotQueryParams) => {
                             // This will trigger a re-fetch when pagination changes
                             console.log(
                                 "Robot: onParamsChange called with:",
