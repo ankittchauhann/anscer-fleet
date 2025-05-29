@@ -1,11 +1,24 @@
 // Utility functions for building backend-compatible query parameters
 import type { RobotQueryParams } from "@/services/robots";
+import type { UserQueryParams } from "@/services/users";
+
+// Generic query parameters interface
+export interface BaseQueryParams {
+    page?: number;
+    currentPage?: number;
+    limit?: number;
+    sort?: string;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+    search?: string;
+    [key: string]: string | number | undefined;
+}
 
 /**
- * Converts frontend query parameters to backend-compatible format
+ * Converts robot query parameters to backend-compatible format
  * Handles MongoDB-style operators and proper encoding
  */
-export const buildBackendQuery = (
+export const buildRobotBackendQuery = (
     params: RobotQueryParams
 ): Record<string, string> => {
     const query: Record<string, string> = {};
@@ -92,10 +105,51 @@ export const buildBackendQuery = (
 };
 
 /**
- * Builds a search query string from parameters
+ * Converts user query parameters to backend-compatible format
  */
-export const buildQueryString = (params: RobotQueryParams): string => {
-    const query = buildBackendQuery(params);
+export const buildUserBackendQuery = (
+    params: UserQueryParams
+): Record<string, string> => {
+    const query: Record<string, string> = {};
+
+    // Handle pagination
+    if (params.page !== undefined && params.page > 0) {
+        query.page = String(params.page);
+    }
+    if (params.limit !== undefined && params.limit > 0) {
+        query.limit = String(params.limit);
+    }
+
+    // Handle sorting - convert to backend format
+    if (params.sortBy && params.sortOrder) {
+        query.sortBy = params.sortBy;
+        query.sortOrder = params.sortOrder;
+    }
+
+    // Handle search
+    if (params.search?.trim()) {
+        query.search = params.search.trim();
+    }
+
+    // Handle exact match filters
+    if (params.role) {
+        query.role = params.role;
+    }
+    if (params.isActive !== undefined) {
+        query.isActive = String(params.isActive);
+    }
+
+    return query;
+};
+
+// Legacy function for backward compatibility
+export const buildBackendQuery = buildRobotBackendQuery;
+
+/**
+ * Builds a search query string from robot parameters
+ */
+export const buildRobotQueryString = (params: RobotQueryParams): string => {
+    const query = buildRobotBackendQuery(params);
     const searchParams = new URLSearchParams();
 
     for (const [key, value] of Object.entries(query)) {
@@ -108,9 +162,28 @@ export const buildQueryString = (params: RobotQueryParams): string => {
 };
 
 /**
- * Validates and normalizes query parameters
+ * Builds a search query string from user parameters
  */
-export const normalizeQueryParams = (
+export const buildUserQueryString = (params: UserQueryParams): string => {
+    const query = buildUserBackendQuery(params);
+    const searchParams = new URLSearchParams();
+
+    for (const [key, value] of Object.entries(query)) {
+        if (value !== undefined && value !== "") {
+            searchParams.append(key, value);
+        }
+    }
+
+    return searchParams.toString();
+};
+
+// Legacy function for backward compatibility
+export const buildQueryString = buildRobotQueryString;
+
+/**
+ * Validates and normalizes robot query parameters
+ */
+export const normalizeRobotQueryParams = (
     params: RobotQueryParams
 ): RobotQueryParams => {
     const normalized: RobotQueryParams = {};
@@ -197,10 +270,54 @@ export const normalizeQueryParams = (
 };
 
 /**
- * Builds a cache key for React Query from normalized parameters
+ * Validates and normalizes user query parameters
  */
-export const buildCacheKey = (params: RobotQueryParams): string[] => {
-    const normalized = normalizeQueryParams(params);
+export const normalizeUserQueryParams = (
+    params: UserQueryParams
+): UserQueryParams => {
+    const normalized: UserQueryParams = {};
+
+    // Normalize pagination
+    if (params.page !== undefined) {
+        normalized.page = Math.max(1, Math.floor(params.page));
+    }
+    if (params.limit !== undefined) {
+        normalized.limit = Math.max(1, Math.min(100, Math.floor(params.limit)));
+    }
+
+    // Normalize search
+    if (params.search?.trim()) {
+        normalized.search = params.search.trim();
+    }
+
+    // Validate and normalize filters
+    if (
+        params.role &&
+        ["admin", "user", "operator", "viewer"].includes(params.role)
+    ) {
+        normalized.role = params.role;
+    }
+    if (params.isActive !== undefined) {
+        normalized.isActive = params.isActive;
+    }
+
+    // Normalize sorting
+    if (params.sortBy && params.sortOrder) {
+        normalized.sortBy = params.sortBy;
+        normalized.sortOrder = params.sortOrder === "desc" ? "desc" : "asc";
+    }
+
+    return normalized;
+};
+
+// Legacy function for backward compatibility
+export const normalizeQueryParams = normalizeRobotQueryParams;
+
+/**
+ * Builds a cache key for React Query from normalized robot parameters
+ */
+export const buildRobotCacheKey = (params: RobotQueryParams): string[] => {
+    const normalized = normalizeRobotQueryParams(params);
     const cacheKey = ["robots"];
 
     // Add normalized parameters to cache key in a deterministic order
@@ -216,6 +333,28 @@ export const buildCacheKey = (params: RobotQueryParams): string[] => {
 };
 
 /**
+ * Builds a cache key for React Query from normalized user parameters
+ */
+export const buildUserCacheKey = (params: UserQueryParams): string[] => {
+    const normalized = normalizeUserQueryParams(params);
+    const cacheKey = ["users"];
+
+    // Add normalized parameters to cache key in a deterministic order
+    const keys = Object.keys(normalized).sort();
+    for (const key of keys) {
+        const value = normalized[key as keyof UserQueryParams];
+        if (value !== undefined && value !== "") {
+            cacheKey.push(`${key}:${value}`);
+        }
+    }
+
+    return cacheKey;
+};
+
+// Legacy function for backward compatibility
+export const buildCacheKey = buildRobotCacheKey;
+
+/**
  * Default query parameters for robots
  */
 export const defaultRobotQueryParams: RobotQueryParams = {
@@ -226,18 +365,41 @@ export const defaultRobotQueryParams: RobotQueryParams = {
 };
 
 /**
- * Merges user parameters with defaults
+ * Default query parameters for users
  */
-export const mergeWithDefaults = (
+export const defaultUserQueryParams: UserQueryParams = {
+    page: 1,
+    limit: 10,
+    sortBy: "createdAt",
+    sortOrder: "desc",
+    // Sort by most recently created by default
+};
+
+/**
+ * Merges robot user parameters with defaults
+ */
+export const mergeRobotWithDefaults = (
     params: Partial<RobotQueryParams>
 ): RobotQueryParams => {
     return { ...defaultRobotQueryParams, ...params };
 };
 
 /**
- * Helper to check if any filters are active
+ * Merges user parameters with defaults
  */
-export const hasActiveFilters = (params: RobotQueryParams): boolean => {
+export const mergeUserWithDefaults = (
+    params: Partial<UserQueryParams>
+): UserQueryParams => {
+    return { ...defaultUserQueryParams, ...params };
+};
+
+// Legacy function for backward compatibility
+export const mergeWithDefaults = mergeRobotWithDefaults;
+
+/**
+ * Helper to check if any robot filters are active
+ */
+export const hasActiveRobotFilters = (params: RobotQueryParams): boolean => {
     return !!(
         params.search ||
         params.status ||
@@ -253,9 +415,21 @@ export const hasActiveFilters = (params: RobotQueryParams): boolean => {
 };
 
 /**
- * Helper to clear all filters but keep pagination and sorting
+ * Helper to check if any user filters are active
  */
-export const clearFilters = (params: RobotQueryParams): RobotQueryParams => {
+export const hasActiveUserFilters = (params: UserQueryParams): boolean => {
+    return !!(params.search || params.role || params.isActive !== undefined);
+};
+
+// Legacy function for backward compatibility
+export const hasActiveFilters = hasActiveRobotFilters;
+
+/**
+ * Helper to clear all robot filters but keep pagination and sorting
+ */
+export const clearRobotFilters = (
+    params: RobotQueryParams
+): RobotQueryParams => {
     return {
         page: params.page,
         limit: params.limit,
@@ -264,3 +438,18 @@ export const clearFilters = (params: RobotQueryParams): RobotQueryParams => {
         sortOrder: params.sortOrder,
     };
 };
+
+/**
+ * Helper to clear all user filters but keep pagination and sorting
+ */
+export const clearUserFilters = (params: UserQueryParams): UserQueryParams => {
+    return {
+        page: params.page,
+        limit: params.limit,
+        sortBy: params.sortBy,
+        sortOrder: params.sortOrder,
+    };
+};
+
+// Legacy function for backward compatibility
+export const clearFilters = clearRobotFilters;

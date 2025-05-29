@@ -1,7 +1,9 @@
 // User management API service
 import { apiRequest } from "./api";
+import { buildUserQueryString } from "@/utils/queryBuilder";
 import type { User } from "./auth";
 
+// Frontend response interface (what we return to components)
 export interface GetUsersResponse {
     success: boolean;
     data: User[];
@@ -11,6 +13,21 @@ export interface GetUsersResponse {
         limit: number;
         total: number;
         totalPages: number;
+    };
+}
+
+// Backend response interface (what the API actually returns)
+interface BackendUsersResponse {
+    success: boolean;
+    data: User[];
+    message?: string;
+    pagination?: {
+        currentPage: number;
+        totalPages: number;
+        totalCount: number;
+        limit: number;
+        hasNext: boolean;
+        hasPrev: boolean;
     };
 }
 
@@ -43,21 +60,24 @@ export interface UserQueryParams {
 export const getUsers = async (
     params?: UserQueryParams
 ): Promise<GetUsersResponse> => {
-    const queryString = params
-        ? `?${new URLSearchParams(
-              Object.entries(params).reduce(
-                  (acc, [key, value]) => {
-                      if (value !== undefined && value !== null) {
-                          acc[key] = value.toString();
-                      }
-                      return acc;
-                  },
-                  {} as Record<string, string>
-              )
-          ).toString()}`
-        : "";
+    const queryString = buildUserQueryString(params || {});
+    const endpoint = `/users${queryString ? `?${queryString}` : ""}`;
+    const response = await apiRequest<BackendUsersResponse>(endpoint);
 
-    return apiRequest<GetUsersResponse>(`/users${queryString}`);
+    // Transform backend pagination format to frontend format
+    return {
+        success: response.success,
+        data: response.data,
+        message: response.message,
+        pagination: response.pagination
+            ? {
+                  page: response.pagination.currentPage,
+                  limit: response.pagination.limit,
+                  total: response.pagination.totalCount,
+                  totalPages: response.pagination.totalPages,
+              }
+            : undefined,
+    };
 };
 
 // Get user by ID
