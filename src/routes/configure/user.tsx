@@ -14,6 +14,7 @@ export interface UserSearchParams {
     // Sorting
     sortBy?: string;
     sortOrder?: "asc" | "desc";
+    sort?: string;
 }
 
 export const Route = createFileRoute("/configure/user")({
@@ -57,6 +58,7 @@ export const Route = createFileRoute("/configure/user")({
                 ["asc", "desc"].includes(search.sortOrder)
                     ? (search.sortOrder as "asc" | "desc")
                     : undefined,
+            sort: typeof search.sort === "string" ? search.sort : undefined,
         };
     },
 });

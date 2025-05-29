@@ -122,8 +122,10 @@ export const buildUserBackendQuery = (
 
     // Handle sorting - convert to backend format
     if (params.sortBy && params.sortOrder) {
-        query.sortBy = params.sortBy;
-        query.sortOrder = params.sortOrder;
+        query.sort =
+            params.sortOrder === "desc" ? `-${params.sortBy}` : params.sortBy;
+    } else if (params.sort) {
+        query.sort = params.sort;
     }
 
     // Handle search

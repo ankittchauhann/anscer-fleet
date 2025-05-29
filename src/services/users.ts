@@ -54,6 +54,7 @@ export interface UserQueryParams {
     search?: string;
     role?: string;
     isActive?: boolean;
+    sort?: string;
 }
 
 // Get all users with optional query parameters

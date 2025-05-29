@@ -31,11 +31,11 @@ const UserScreen = () => {
         }
 
         // Add filters if provided
-        if (searchParams.role) {
-            params.role = searchParams.role;
-        }
-        if (searchParams.isActive !== undefined) {
-            params.isActive = searchParams.isActive;
+        if (searchParams.sortBy && searchParams.sortOrder) {
+            params.sortBy = searchParams.sortBy;
+            params.sortOrder = searchParams.sortOrder;
+        } else if (searchParams.sort) {
+            params.sort = searchParams.sort;
         }
 
         // Add sorting if provided
