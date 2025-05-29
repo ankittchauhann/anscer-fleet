@@ -81,31 +81,6 @@ const UserScreen = () => {
     const users = usersResponse?.data || [];
     const pagination = usersResponse?.pagination;
 
-    // Calculate stats from user data
-    const stats = React.useMemo(() => {
-        const total = users.length;
-        const active = users.filter((u) => u.isActive).length;
-        const inactive = users.filter((u) => !u.isActive).length;
-        const adminCount = users.filter(
-            (u) => u.role.toLowerCase() === "admin"
-        ).length;
-        const operatorCount = users.filter(
-            (u) => u.role.toLowerCase() === "operator"
-        ).length;
-        const userCount = users.filter(
-            (u) => u.role.toLowerCase() === "user"
-        ).length;
-
-        return {
-            total,
-            active,
-            inactive,
-            adminCount,
-            operatorCount,
-            userCount,
-        };
-    }, [users]);
-
     return (
         <div className="p-6 space-y-6 flex flex-col h-full">
             {/* Header */}
