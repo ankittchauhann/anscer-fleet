@@ -85,7 +85,7 @@ const Login = () => {
                             {...signUpForm.register("name")}
                             className="mt-1"
                             autoComplete="name"
-                            onChange={handleInputChange}
+                            onInput={handleInputChange}
                             disabled={isLoading}
                         />
                         {signUpForm.formState.errors.name && (
@@ -103,7 +103,7 @@ const Login = () => {
                             {...signUpForm.register("email")}
                             className="mt-1"
                             autoComplete="email"
-                            onChange={handleInputChange}
+                            onInput={handleInputChange}
                             disabled={isLoading}
                         />
                         {signUpForm.formState.errors.email && (
@@ -121,7 +121,7 @@ const Login = () => {
                             {...signUpForm.register("password")}
                             className="mt-1"
                             autoComplete="new-password"
-                            onChange={handleInputChange}
+                            onInput={handleInputChange}
                             disabled={isLoading}
                         />
                         {signUpForm.formState.errors.password && (
@@ -186,7 +186,7 @@ const Login = () => {
                         {...loginForm.register("email")}
                         className="mt-1"
                         autoComplete="email"
-                        onChange={handleInputChange}
+                        onInput={handleInputChange}
                         disabled={isLoading}
                     />
                     {loginForm.formState.errors.email && (
@@ -204,7 +204,7 @@ const Login = () => {
                         {...loginForm.register("password")}
                         className="mt-1"
                         autoComplete="current-password"
-                        onChange={handleInputChange}
+                        onInput={handleInputChange}
                         disabled={isLoading}
                     />
                     {loginForm.formState.errors.password && (
@@ -231,17 +231,6 @@ const Login = () => {
                     >
                         Don't have an account? Sign up
                     </button>
-                </div>
-
-                {/* Development hint */}
-                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
-                    <p className="text-green-700 text-xs">
-                        <strong>✅ Ready:</strong> Session-based authentication
-                        configured.
-                        <br />
-                        Backend CORS and session endpoints are working
-                        correctly.
-                    </p>
                 </div>
             </form>
         </div>
