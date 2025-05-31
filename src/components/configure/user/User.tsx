@@ -31,18 +31,22 @@ const UserScreen = () => {
             params.search = searchParams.search;
         }
 
-        // Add filters if provided
-        if (searchParams.sortBy && searchParams.sortOrder) {
-            params.sortBy = searchParams.sortBy;
-            params.sortOrder = searchParams.sortOrder;
-        } else if (searchParams.sort) {
-            params.sort = searchParams.sort;
+        // Add role filter if provided
+        if (searchParams.role) {
+            params.role = searchParams.role;
+        }
+
+        // Add isActive filter if provided
+        if (searchParams.isActive !== undefined) {
+            params.isActive = searchParams.isActive;
         }
 
         // Add sorting if provided
         if (searchParams.sortBy && searchParams.sortOrder) {
             params.sortBy = searchParams.sortBy;
             params.sortOrder = searchParams.sortOrder;
+        } else if (searchParams.sort) {
+            params.sort = searchParams.sort;
         }
 
         console.log("User: built queryParams:", params);
