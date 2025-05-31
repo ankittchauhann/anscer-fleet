@@ -10,6 +10,7 @@ import {
     type LoginRequest,
     type SignUpRequest,
 } from "@/services/auth";
+import { showToast } from "@/lib/toast";
 
 interface AuthSession {
     user: User;
@@ -106,6 +107,12 @@ export const useAuth = () => {
                 isAuthenticated: true,
             });
 
+            // Show success notification
+            showToast.success(
+                "Welcome back!",
+                `Successfully signed in as ${sessionData.user.name}`
+            );
+
             // Navigate to home page
             window.location.href = "/";
             return true;
@@ -131,6 +138,8 @@ export const useAuth = () => {
                     err instanceof Error ? err.message : errorMessage;
             }
 
+            // Show error notification
+            showToast.error("Sign In Failed", errorMessage);
             setError(errorMessage);
             return false;
         } finally {
@@ -158,6 +167,12 @@ export const useAuth = () => {
                 isAuthenticated: true,
             });
 
+            // Show success notification
+            showToast.success(
+                "Account Created!",
+                `Welcome ${sessionData.user.name}! Your account has been created successfully.`
+            );
+
             // Navigate to home page
             window.location.href = "/";
             return true;
@@ -182,6 +197,8 @@ export const useAuth = () => {
                     err instanceof Error ? err.message : errorMessage;
             }
 
+            // Show error notification
+            showToast.error("Registration Failed", errorMessage);
             setError(errorMessage);
             return false;
         } finally {
@@ -193,8 +210,19 @@ export const useAuth = () => {
     const signOut = async () => {
         try {
             await signOutUser();
+
+            // Show success notification
+            showToast.success(
+                "Signed Out",
+                "You have been successfully signed out."
+            );
         } catch (error) {
             console.error("Sign out error:", error);
+            // Show error notification but still proceed with logout
+            showToast.warning(
+                "Sign Out",
+                "There was an issue signing out from the server, but you have been logged out locally."
+            );
         } finally {
             // Always clear local state regardless of API call result
             setAuthState({

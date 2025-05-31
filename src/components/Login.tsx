@@ -70,13 +70,6 @@ const Login = () => {
                         Sign Up
                     </h2>
 
-                    {/* Display auth errors */}
-                    {error && (
-                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                            <p className="text-red-600 text-sm">{error}</p>
-                        </div>
-                    )}
-
                     <div className="mb-4">
                         <Label htmlFor="name">Name</Label>
                         <Input
@@ -149,15 +142,6 @@ const Login = () => {
                             Already have an account? Login
                         </button>
                     </div>
-
-                    {/* Development hint */}
-                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                        <p className="text-blue-700 text-xs">
-                            <strong>Development:</strong> Make sure your backend
-                            server is running on http://localhost:5005 with
-                            session-based auth.
-                        </p>
-                    </div>
                 </form>
             </div>
         );
@@ -170,13 +154,6 @@ const Login = () => {
                 className="bg-white p-8 rounded shadow-md w-80"
             >
                 <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-
-                {/* Display auth errors */}
-                {error && (
-                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                        <p className="text-red-600 text-sm">{error}</p>
-                    </div>
-                )}
 
                 <div className="mb-4">
                     <Label htmlFor="email">Email</Label>
