@@ -128,9 +128,9 @@ export const buildUserBackendQuery = (
         query.sort = params.sort;
     }
 
-    // Handle search
+    // Handle search - map to 'name' parameter for backend
     if (params.search?.trim()) {
-        query.search = params.search.trim();
+        query.name = params.search.trim();
     }
 
     // Handle exact match filters

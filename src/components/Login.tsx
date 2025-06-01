@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 const loginSchema = z.object({
     email: z.string().email({ message: "Invalid email address" }),
@@ -13,22 +14,37 @@ const loginSchema = z.object({
         .min(6, { message: "Password must be at least 6 characters" }),
 });
 
+const signUpSchema = z.object({
+    name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+    email: z.string().email({ message: "Invalid email address" }),
+    password: z
+        .string()
+        .min(6, { message: "Password must be at least 6 characters" }),
+});
+
 type LoginForm = z.infer<typeof loginSchema>;
+type SignUpForm = z.infer<typeof signUpSchema>;
 
 const Login = () => {
-    const { signIn, isLoading, error, clearError } = useAuth();
+    const { signIn, signUp, isLoading, error, clearError } = useAuth();
+    const [isSignUpMode, setIsSignUpMode] = useState(false);
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<LoginForm>({
+    const loginForm = useForm<LoginForm>({
         resolver: zodResolver(loginSchema),
     });
 
-    const onSubmit = async (data: LoginForm) => {
+    const signUpForm = useForm<SignUpForm>({
+        resolver: zodResolver(signUpSchema),
+    });
+
+    const onLoginSubmit = async (data: LoginForm) => {
         clearError();
         await signIn(data.email, data.password);
+    };
+
+    const onSignUpSubmit = async (data: SignUpForm) => {
+        clearError();
+        await signUp(data.email, data.password, data.name);
     };
 
     // Clear errors when user starts typing
@@ -36,63 +52,123 @@ const Login = () => {
         if (error) clearError();
     };
 
-    // if (isLogged()) {
-    //     const user = getUser();
-    //     return (
-    //         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-    //             <div className="bg-white p-8 rounded shadow-md w-80 flex flex-col items-center">
-    //                 <h2 className="text-2xl font-bold mb-6 text-center">
-    //                     Welcome
-    //                 </h2>
-    //                 <p className="mb-2">
-    //                     <span className="font-semibold">Name:</span>{" "}
-    //                     {user?.name}
-    //                 </p>
-    //                 <p className="mb-2">
-    //                     <span className="font-semibold">Email:</span>{" "}
-    //                     <span className="font-mono">{user?.email}</span>
-    //                 </p>
-    //                 <p className="mb-4">
-    //                     <span className="font-semibold">Role:</span>{" "}
-    //                     <span className="capitalize">{user?.role}</span>
-    //                 </p>
-    //                 <Button onClick={signOut} className="w-full mb-2">
-    //                     Logout
-    //                 </Button>
-    //             </div>
-    //         </div>
-    //     );
-    // }
+    const toggleMode = () => {
+        setIsSignUpMode(!isSignUpMode);
+        clearError();
+        loginForm.reset();
+        signUpForm.reset();
+    };
+
+    if (isSignUpMode) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+                <form
+                    onSubmit={signUpForm.handleSubmit(onSignUpSubmit)}
+                    className="bg-white p-8 rounded shadow-md w-80"
+                >
+                    <h2 className="text-2xl font-bold mb-6 text-center">
+                        Sign Up
+                    </h2>
+
+                    <div className="mb-4">
+                        <Label htmlFor="name">Name</Label>
+                        <Input
+                            id="name"
+                            type="text"
+                            {...signUpForm.register("name")}
+                            className="mt-1"
+                            autoComplete="name"
+                            onInput={handleInputChange}
+                            disabled={isLoading}
+                        />
+                        {signUpForm.formState.errors.name && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {signUpForm.formState.errors.name.message}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="mb-4">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            {...signUpForm.register("email")}
+                            className="mt-1"
+                            autoComplete="email"
+                            onInput={handleInputChange}
+                            disabled={isLoading}
+                        />
+                        {signUpForm.formState.errors.email && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {signUpForm.formState.errors.email.message}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="mb-6">
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                            id="password"
+                            type="password"
+                            {...signUpForm.register("password")}
+                            className="mt-1"
+                            autoComplete="new-password"
+                            onInput={handleInputChange}
+                            disabled={isLoading}
+                        />
+                        {signUpForm.formState.errors.password && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {signUpForm.formState.errors.password.message}
+                            </p>
+                        )}
+                    </div>
+
+                    <Button
+                        type="submit"
+                        className="w-full mb-4"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? "Creating account..." : "Create Account"}
+                    </Button>
+
+                    <div className="text-center">
+                        <button
+                            type="button"
+                            onClick={toggleMode}
+                            className="text-blue-600 hover:text-blue-800 text-sm"
+                            disabled={isLoading}
+                        >
+                            Already have an account? Login
+                        </button>
+                    </div>
+                </form>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
             <form
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={loginForm.handleSubmit(onLoginSubmit)}
                 className="bg-white p-8 rounded shadow-md w-80"
             >
                 <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-
-                {/* Display login errors */}
-                {error && (
-                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                        <p className="text-red-600 text-sm">{error}</p>
-                    </div>
-                )}
 
                 <div className="mb-4">
                     <Label htmlFor="email">Email</Label>
                     <Input
                         id="email"
                         type="email"
-                        {...register("email")}
+                        {...loginForm.register("email")}
                         className="mt-1"
                         autoComplete="email"
-                        onChange={handleInputChange}
+                        onInput={handleInputChange}
                         disabled={isLoading}
                     />
-                    {errors.email && (
+                    {loginForm.formState.errors.email && (
                         <p className="text-red-600 text-sm mt-1">
-                            {errors.email.message}
+                            {loginForm.formState.errors.email.message}
                         </p>
                     )}
                 </div>
@@ -102,29 +178,36 @@ const Login = () => {
                     <Input
                         id="password"
                         type="password"
-                        {...register("password")}
+                        {...loginForm.register("password")}
                         className="mt-1"
                         autoComplete="current-password"
-                        onChange={handleInputChange}
+                        onInput={handleInputChange}
                         disabled={isLoading}
                     />
-                    {errors.password && (
+                    {loginForm.formState.errors.password && (
                         <p className="text-red-600 text-sm mt-1">
-                            {errors.password.message}
+                            {loginForm.formState.errors.password.message}
                         </p>
                     )}
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button
+                    type="submit"
+                    className="w-full mb-4"
+                    disabled={isLoading}
+                >
                     {isLoading ? "Signing in..." : "Login"}
                 </Button>
 
-                {/* Development hint */}
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                    <p className="text-blue-700 text-xs">
-                        <strong>Development:</strong> Make sure your backend
-                        server is running on the configured API URL.
-                    </p>
+                <div className="text-center">
+                    <button
+                        type="button"
+                        onClick={toggleMode}
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                        disabled={isLoading}
+                    >
+                        Don't have an account? Sign up
+                    </button>
                 </div>
             </form>
         </div>

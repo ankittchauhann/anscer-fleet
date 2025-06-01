@@ -7,6 +7,7 @@ import type { UserSearchParams } from "@/routes/configure/user";
 import { UserDataTable } from "./UserDataTable";
 import { getUserColumns } from "./UserColumns";
 import { UserFilters } from "./UserFilters";
+import { showToast } from "@/lib/toast";
 
 const UserScreen = () => {
     const searchParams = useSearch({
@@ -30,18 +31,22 @@ const UserScreen = () => {
             params.search = searchParams.search;
         }
 
-        // Add filters if provided
-        if (searchParams.sortBy && searchParams.sortOrder) {
-            params.sortBy = searchParams.sortBy;
-            params.sortOrder = searchParams.sortOrder;
-        } else if (searchParams.sort) {
-            params.sort = searchParams.sort;
+        // Add role filter if provided
+        if (searchParams.role) {
+            params.role = searchParams.role;
+        }
+
+        // Add isActive filter if provided
+        if (searchParams.isActive !== undefined) {
+            params.isActive = searchParams.isActive;
         }
 
         // Add sorting if provided
         if (searchParams.sortBy && searchParams.sortOrder) {
             params.sortBy = searchParams.sortBy;
             params.sortOrder = searchParams.sortOrder;
+        } else if (searchParams.sort) {
+            params.sort = searchParams.sort;
         }
 
         console.log("User: built queryParams:", params);
@@ -56,6 +61,28 @@ const UserScreen = () => {
         refetch,
     } = useUsers({ params: queryParams });
 
+    // Show error toast when there's an error
+    React.useEffect(() => {
+        if (error) {
+            showToast.error(
+                "Failed to Load Users",
+                error.message ||
+                    "An unexpected error occurred while loading user data"
+            );
+        }
+    }, [error]);
+
+    // Handle retry with toast feedback
+    const handleRetry = async () => {
+        try {
+            showToast.loading("Retrying...");
+            await refetch();
+            showToast.success("Success!", "User data loaded successfully");
+        } catch (err) {
+            showToast.error("Retry Failed", "Unable to load user data");
+        }
+    };
+
     if (error) {
         return (
             <div className="p-6 flex flex-col items-center justify-center h-full">
@@ -68,7 +95,7 @@ const UserScreen = () => {
                     </p>
                     <button
                         type="button"
-                        onClick={() => refetch()}
+                        onClick={handleRetry}
                         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
                         Retry

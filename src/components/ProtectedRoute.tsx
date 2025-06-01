@@ -9,7 +9,19 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, fallback }: ProtectedRouteProps) => {
-    const { isLogged } = useAuth();
+    const { isLogged, isInitialized, isLoading } = useAuth();
+
+    // Show loading while initializing session
+    if (!isInitialized || isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+                <div className="bg-white p-8 rounded shadow-md w-96 text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!isLogged()) {
         return (
@@ -71,7 +83,7 @@ export const RoleProtectedRoute = ({
         );
     }
 
-    if (user && !allowedRoles.includes(user.role)) {
+    if (user && !allowedRoles.includes(user.role || "user")) {
         return (
             fallback || (
                 <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
@@ -85,7 +97,7 @@ export const RoleProtectedRoute = ({
                         <p className="mb-6 text-sm text-gray-500">
                             Your role:{" "}
                             <span className="font-semibold capitalize">
-                                {user.role}
+                                {user.role || "user"}
                             </span>
                             <br />
                             Required roles:{" "}
@@ -101,7 +113,10 @@ export const RoleProtectedRoute = ({
                             >
                                 Go Back
                             </Button>
-                            <Button onClick={signOut} className="flex-1">
+                            <Button
+                                onClick={() => signOut()}
+                                className="flex-1"
+                            >
                                 Logout
                             </Button>
                         </div>

@@ -7,6 +7,7 @@ import { useAuth } from "./hooks/useAuth";
 import NotFound from "./components/NotFound";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
+import { Toaster } from "sonner";
 
 declare module "@tanstack/react-router" {
     interface Register {
@@ -32,6 +33,16 @@ function App() {
             <QueryClientProvider client={queryClient}>
                 <div className="">
                     <RouterProvider router={router} />
+                    <Toaster
+                        position="bottom-left"
+                        closeButton
+                        richColors
+                        expand={false}
+                        visibleToasts={5}
+                        toastOptions={{
+                            duration: 4000,
+                        }}
+                    />
                 </div>
             </QueryClientProvider>
         </Provider>

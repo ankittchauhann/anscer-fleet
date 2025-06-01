@@ -1,33 +1,36 @@
-// Authentication API service
-const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:5005/api";
+// Authentication API service - Session-based (Better-Auth)
+const AUTH_BASE_URL = "http://localhost:5005";
 
 export interface LoginRequest {
     email: string;
     password: string;
 }
 
+export interface SignUpRequest {
+    email: string;
+    password: string;
+    name: string;
+}
+
 export interface User {
-    _id: string;
+    id: string;
     name: string;
     email: string;
-    role: string;
-    isActive: boolean;
+    emailVerified: boolean;
+    role?: string; // Optional for backward compatibility, may be added by better-auth plugins
     createdAt: string;
     updatedAt: string;
 }
 
-export interface LoginResponse {
-    success: boolean;
-    data: {
-        user: User;
-        token: string;
+export interface AuthSession {
+    user: User;
+    session: {
+        id: string;
+        expiresAt: string;
     };
-    message: string;
 }
 
 export interface ApiErrorResponse {
-    success: false;
     error: string;
     message?: string;
     details?: unknown;
@@ -45,11 +48,11 @@ export class ApiError extends Error {
     }
 }
 
-// Login API call (dedicated to auth to avoid circular dependencies)
-export const loginUser = async (
+// Sign in with email/password (session-based)
+export const signInWithEmail = async (
     credentials: LoginRequest
-): Promise<LoginResponse> => {
-    const url = `${API_BASE_URL}/users/auth`;
+): Promise<AuthSession> => {
+    const url = `${AUTH_BASE_URL}/api/auth/sign-in/email`;
 
     try {
         const response = await fetch(url, {
@@ -57,13 +60,13 @@ export const loginUser = async (
             headers: {
                 "Content-Type": "application/json",
             },
+            credentials: "include", // Include cookies
             body: JSON.stringify(credentials),
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-            // Handle specific error responses from backend
             const errorMessage =
                 data.message ||
                 data.error ||
@@ -71,22 +74,11 @@ export const loginUser = async (
             throw new ApiError(response.status, errorMessage, response);
         }
 
-        // Check if backend returned success: false even with 200 status
-        if (data.success === false) {
-            throw new ApiError(
-                400,
-                data.message || data.error || "Authentication failed",
-                response
-            );
-        }
-
         return data;
     } catch (error) {
         if (error instanceof ApiError) {
             throw error;
         }
-
-        // Network or other errors
         throw new ApiError(
             0,
             error instanceof Error ? error.message : "Unknown error occurred"
@@ -94,47 +86,93 @@ export const loginUser = async (
     }
 };
 
-// Token management utilities
-export const getStoredToken = (): string | null => {
-    return localStorage.getItem("authToken");
-};
-
-export const setStoredToken = (token: string): void => {
-    localStorage.setItem("authToken", token);
-};
-
-export const removeStoredToken = (): void => {
-    localStorage.removeItem("authToken");
-};
-
-export const getStoredUser = (): User | null => {
-    const userStr = localStorage.getItem("authUser");
-    if (!userStr) return null;
+// Sign up with email/password (session-based)
+export const signUpWithEmail = async (
+    userData: SignUpRequest
+): Promise<AuthSession> => {
+    const url = `${AUTH_BASE_URL}/api/auth/sign-up/email`;
 
     try {
-        return JSON.parse(userStr);
-    } catch {
-        return null;
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include", // Include cookies
+            body: JSON.stringify(userData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            const errorMessage =
+                data.message ||
+                data.error ||
+                `HTTP ${response.status}: ${response.statusText}`;
+            throw new ApiError(response.status, errorMessage, response);
+        }
+
+        return data;
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(
+            0,
+            error instanceof Error ? error.message : "Unknown error occurred"
+        );
     }
 };
 
-export const setStoredUser = (user: User): void => {
-    localStorage.setItem("authUser", JSON.stringify(user));
-};
+// Sign out (session-based)
+export const signOutUser = async (): Promise<void> => {
+    const url = `${AUTH_BASE_URL}/api/auth/sign-out`;
 
-export const removeStoredUser = (): void => {
-    localStorage.removeItem("authUser");
-};
-
-// Check if token is valid (you can enhance this with JWT decode)
-export const isTokenValid = (token: string): boolean => {
-    if (!token) return false;
-
-    // Basic validation - in production you might want to decode JWT and check expiry
     try {
-        // You can add JWT decode here if needed
-        return token.length > 0;
-    } catch {
-        return false;
+        await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include", // Include cookies
+            body: JSON.stringify({}),
+        });
+        // Don't throw error even if request fails - always clear local state
+    } catch (error) {
+        // Ignore errors - always proceed with logout
+        console.warn("Sign out request failed:", error);
+    }
+};
+
+// Get current session
+export const getCurrentSession = async (): Promise<AuthSession | null> => {
+    const url = `${AUTH_BASE_URL}/api/auth/get-session`;
+
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            credentials: "include", // Include cookies
+        });
+
+        if (!response.ok) {
+            // If unauthorized, return null (not signed in)
+            if (response.status === 401) {
+                return null;
+            }
+            throw new ApiError(
+                response.status,
+                `HTTP ${response.status}: ${response.statusText}`,
+                response
+            );
+        }
+
+        const data = await response.json();
+        return data; // Could be null if no session
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        // Network errors - assume not authenticated
+        return null;
     }
 };

@@ -22,9 +22,13 @@ type RouterContext = {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
     beforeLoad: ({ context, location }) => {
-        const { isLogged } = context.authentication;
+        const { isLogged, isInitialized } = context.authentication;
         // Allow unauthenticated access to /login
         if (location.pathname === "/login") return;
+
+        // Wait for session initialization before checking auth
+        if (!isInitialized) return;
+
         if (!isLogged()) {
             throw redirect({
                 to: "/login",
@@ -111,7 +115,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
                                             <Button
                                                 variant="outline"
                                                 className="w-full mt-2"
-                                                onClick={signOut}
+                                                onClick={() => signOut()}
                                             >
                                                 Logout
                                             </Button>
